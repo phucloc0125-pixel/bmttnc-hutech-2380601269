@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+{% block title %}Playfair Cipher - HUTECH{% endblock %}
+
+{% block back_button %}
+<a href="/" class="back-link">
+    <i class="fa-solid fa-arrow-left"></i> Quay lại Danh sách
+</a>
+{% endblock %}
+
+{% block extra_css %}
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.page-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.page-header h2 i {
+    color: #a855f7;
+}
+
+.cipher-layout {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 30px;
+}
+
+@media (max-width: 768px) {
+    .cipher-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cipher-card-box {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: all 0.3s ease;
+}
+
+.matrix-card {
+    background: rgba(168, 85, 247, 0.03);
+    border: 1px solid rgba(168, 85, 247, 0.1);
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.playfair-title {
+    color: #a855f7;
+}
+
+/* Tabs */
+.tabs-container {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+    background: #a855f7;
+    color: white;
+}
+
+/* Matrix Display Grid */
+.matrix-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.matrix-cell {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.matrix-cell:hover {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: #a855f7;
+    color: white;
+    transform: scale(1.05);
+}
+
+.btn-playfair {
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+}
+
+.btn-playfair:hover {
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+}
+
+/* Result Box */
+.result-box {
+    padding: 15px 18px;
+    background: rgba(168, 85, 247, 0.05);
+    border-left: 4px solid #a855f7;
+    border-radius: 0 12px 12px 0;
+    display: none;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+.result-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+}
+
+.result-text {
+    font-size: 16px;
+    font-weight: 600;
+    word-break: break-all;
+    font-family: monospace;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2><i class="fa-solid fa-table-cells"></i> Playfair Cipher</h2>
+</div>
+
+<div class="cipher-layout">
+    <!-- Nhập liệu Card -->
+    <div class="cipher-card-box">
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchMode('encrypt')">MÃ HÓA (ENCRYPT)</button>
+            <button class="tab-btn" onclick="switchMode('decrypt')">GIẢI MÃ (DECRYPT)</button>
+        </div>
+        
+        <form id="playfair-form">
+            <input type="hidden" id="mode" name="mode" value="encrypt">
+            
+            <div class="form-group">
+                <label class="form-label" id="text-label">Bản rõ (Plain Text):</label>
+                <textarea class="form-control" id="inputText" name="inputText" rows="3" placeholder="Nhập bản rõ..." required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Khóa (Key - chuỗi chữ cái):</label>
+                <input type="text" class="form-control" id="inputKey" name="inputKey" placeholder="Ví dụ: MONARCHY" required>
+            </div>
+            
+            <button type="submit" class="btn-custom btn-playfair">
+                <span id="btn-text"><i class="fa-solid fa-shield-halved"></i> Thực hiện Mã hóa</span>
+            </button>
+        </form>
+
+        <div id="playfair-result" class="result-box">
+            <div class="result-title" id="result-title-label">Kết quả bản mã (Cipher Text)</div>
+            <div class="result-text" id="playfair-result-text"></div>
+        </div>
+    </div>
+
+    <!-- Ma trận Playfair Card -->
+    <div class="cipher-card-box matrix-card">
+        <h3 class="card-title playfair-title">
+            <i class="fa-solid fa-grid-3x3"></i> MA TRẬN 5x5 (PLAYFAIR MATRIX)
+        </h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 5px;">
+            Nhập khóa để xem ma trận Playfair được sinh tự động bên dưới:
+        </p>
+        
+        <div class="matrix-container" id="matrix-grid">
+            <!-- 25 Cells will be loaded here -->
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+            <div class="matrix-cell">-</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchMode(mode) {
+        document.getElementById('mode').value = mode;
+        const btns = document.querySelectorAll('.tab-btn');
+        btns[0].classList.toggle('active', mode === 'encrypt');
+        btns[1].classList.toggle('active', mode === 'decrypt');
+        
+        const textLabel = document.getElementById('text-label');
+        const inputText = document.getElementById('inputText');
+        const btnText = document.getElementById('btn-text');
+        const resultTitleLabel = document.getElementById('result-title-label');
+        
+        if (mode === 'encrypt') {
+            textLabel.textContent = "Bản rõ (Plain Text):";
+            inputText.placeholder = "Nhập bản rõ...";
+            btnText.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Thực hiện Mã hóa';
+            resultTitleLabel.textContent = "Kết quả bản mã (Cipher Text)";
+        } else {
+            textLabel.textContent = "Bản mã (Cipher Text):";
+            inputText.placeholder = "Nhập bản mã...";
+            btnText.innerHTML = '<i class="fa-solid fa-unlock-keyhole"></i> Thực hiện Giải mã';
+            resultTitleLabel.textContent = "Kết quả bản rõ (Plain Text)";
+        }
+        
+        // Hide result
+        document.getElementById('playfair-result').style.display = 'none';
+    }
+
+    // Tự động cập nhật ma trận khi nhập Key
+    const keyInput = document.getElementById('inputKey');
+    
+    async function updateMatrix() {
+        const key = keyInput.value.trim();
+        if (!key) return;
+        
+        try {
+            const response = await fetch('/playfair/matrix', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key: key })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                renderMatrix(data.matrix);
+            }
+        } catch (error) {
+            console.error('Error fetching matrix:', error);
+        }
+    }
+    
+    keyInput.addEventListener('input', updateMatrix);
+
+    function renderMatrix(matrix) {
+        const grid = document.getElementById('matrix-grid');
+        grid.innerHTML = '';
+        
+        for (let row = 0; row < 5; row++) {
+            for (let col = 0; col < 5; col++) {
+                const cell = document.createElement('div');
+                cell.className = 'matrix-cell';
+                cell.textContent = matrix[row][col];
+                grid.appendChild(cell);
+            }
+        }
+    }
+
+    // Xử lý gửi Form
+    document.getElementById('playfair-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const mode = document.getElementById('mode').value;
+        const text = document.getElementById('inputText').value;
+        const key = document.getElementById('inputKey').value;
+        
+        const url = mode === 'encrypt' ? '/playfair/encrypt' : '/playfair/decrypt';
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text, key: key })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                document.getElementById('playfair-result-text').textContent = data.result;
+                document.getElementById('playfair-result').style.display = 'block';
+                
+                if (data.matrix) {
+                    renderMatrix(data.matrix);
+                }
+            } else {
+                alert('Có lỗi xảy ra khi xử lý!');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Không thể kết nối đến server!');
+        }
+    });
+</script>
+{% endblock %}
