@@ -42,9 +42,7 @@ def caesar_decrypt():
     })
 
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
-#vigenere
+# vigenere
 @app.route('/api/vigenere/encrypt', methods=['POST'])
 def vigenere_encrypt():
     data = request.json
@@ -99,4 +97,8 @@ def playfair_decrypt():
     playfair_matrix = playfair_cipher.create_playfair_matrix(key)
     decrypted_text = playfair_cipher.playfair_decrypt(cipher_text, playfair_matrix)
     return jsonify({'decrypted_text': decrypted_text})
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
 
