@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Caesar Cipher - HUTECH{% endblock %}
+
+{% block back_button %}
+<a href="/" class="back-link">
+    <i class="fa-solid fa-arrow-left"></i> Quay lại Danh sách
+</a>
+{% endblock %}
+
+{% block extra_css %}
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.page-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.page-header h2 i {
+    color: var(--accent-primary);
+}
+
+.cipher-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+@media (max-width: 768px) {
+    .cipher-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cipher-card-box {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+.cipher-card-box:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.encrypt-title {
+    color: #3b82f6;
+}
+
+.decrypt-title {
+    color: #10b981;
+}
+
+.btn-encrypt {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-encrypt:hover {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.btn-decrypt {
+    background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-decrypt:hover {
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Result Box Styling */
+.result-box {
+    margin-top: 20px;
+    padding: 15px 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 4px solid var(--accent-primary);
+    border-radius: 0 12px 12px 0;
+    display: none;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+.result-box.encrypt-res {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.result-box.decrypt-res {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.result-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+}
+
+.result-text {
+    font-size: 16px;
+    font-weight: 600;
+    word-break: break-all;
+    font-family: monospace;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2><i class="fa-solid fa-key"></i> Caesar Cipher</h2>
+</div>
+
+<div class="cipher-layout">
+    <!-- Mã hóa Card -->
+    <div class="cipher-card-box">
+        <h3 class="card-title encrypt-title">
+            <i class="fa-solid fa-lock"></i> MÃ HÓA (ENCRYPTION)
+        </h3>
+        
+        <form id="encrypt-form" method="POST" action="/encrypt">
+            <div class="form-group">
+                <label class="form-label">Bản rõ (Plain Text):</label>
+                <textarea class="form-control" name="inputPlainText" rows="3" placeholder="Nhập bản rõ cần mã hóa..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Khóa dịch chuyển (Key - số nguyên):</label>
+                <input type="number" class="form-control" name="inputKeyPlain" placeholder="Ví dụ: 3" required>
+            </div>
+            <button type="submit" class="btn-custom btn-encrypt">
+                <i class="fa-solid fa-shield-halved"></i> Mã hóa
+            </button>
+        </form>
+
+        <div id="encrypt-result" class="result-box encrypt-res">
+            <div class="result-title">Kết quả bản mã (Cipher Text)</div>
+            <div class="result-text" id="encrypt-result-text"></div>
+        </div>
+    </div>
+
+    <!-- Giải mã Card -->
+    <div class="cipher-card-box">
+        <h3 class="card-title decrypt-title">
+            <i class="fa-solid fa-lock-open"></i> GIẢI MÃ (DECRYPTION)
+        </h3>
+        
+        <form id="decrypt-form" method="POST" action="/decrypt">
+            <div class="form-group">
+                <label class="form-label">Bản mã (Cipher Text):</label>
+                <textarea class="form-control" name="inputCipherText" rows="3" placeholder="Nhập bản mã cần giải mã..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Khóa dịch chuyển (Key - số nguyên):</label>
+                <input type="number" class="form-control" name="inputKeyCipher" placeholder="Ví dụ: 3" required>
+            </div>
+            <button type="submit" class="btn-custom btn-decrypt">
+                <i class="fa-solid fa-unlock-keyhole"></i> Giải mã
+            </button>
+        </form>
+
+        <div id="decrypt-result" class="result-box decrypt-res">
+            <div class="result-title">Kết quả bản rõ (Plain Text)</div>
+            <div class="result-text" id="decrypt-result-text"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Xử lý gửi AJAX cho Form mã hóa
+    document.getElementById('encrypt-form').addEventListener('submit', async function(e) {
+        // Chúng ta vẫn có thể dùng AJAX để giao diện cực mượt, nhưng vẫn gửi dữ liệu chuẩn
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        try {
+            const response = await fetch('/encrypt', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json' // Báo cho server biết ta muốn nhận JSON nếu được hỗ trợ
+                }
+            });
+            
+            if (response.ok) {
+                // Thử parse JSON trước, nếu server trả về HTML thô thì parse HTML
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    showResult('encrypt', data.result);
+                } else {
+                    const htmlText = await response.text();
+                    // Parse text: x<br/>key: y<br/>encrypted text: result
+                    const match = htmlText.match(/encrypted text:\s*(.*)$/i);
+                    const result = match ? match[1].trim() : htmlText;
+                    showResult('encrypt', result);
+                }
+            } else {
+                alert('Có lỗi xảy ra khi mã hóa!');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Không thể kết nối đến server!');
+        }
+    });
+
+    // Xử lý gửi AJAX cho Form giải mã
+    document.getElementById('decrypt-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        try {
+            const response = await fetch('/decrypt', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    showResult('decrypt', data.result);
+                } else {
+                    const htmlText = await response.text();
+                    const match = htmlText.match(/decrypted text:\s*(.*)$/i);
+                    const result = match ? match[1].trim() : htmlText;
+                    showResult('decrypt', result);
+                }
+            } else {
+                alert('Có lỗi xảy ra khi giải mã!');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Không thể kết nối đến server!');
+        }
+    });
+
+    function showResult(type, text) {
+        const resultDiv = document.getElementById(`${type}-result`);
+        const resultText = document.getElementById(`${type}-result-text`);
+        
+        resultText.textContent = text;
+        resultDiv.style.display = 'block';
+    }
+</script>
+{% endblock %}

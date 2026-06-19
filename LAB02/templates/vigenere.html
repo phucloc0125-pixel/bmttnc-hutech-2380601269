@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Vigenere Cipher - HUTECH{% endblock %}
+
+{% block back_button %}
+<a href="/" class="back-link">
+    <i class="fa-solid fa-arrow-left"></i> Quay lại Danh sách
+</a>
+{% endblock %}
+
+{% block extra_css %}
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.page-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.page-header h2 i {
+    color: #06b6d4;
+}
+
+.cipher-card-box {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: all 0.3s ease;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.cipher-card-box:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Tabs */
+.tabs-container {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+    background: #06b6d4;
+    color: white;
+}
+
+.btn-vigenere {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+.btn-vigenere:hover {
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+}
+
+/* Result Box */
+.result-box {
+    padding: 15px 18px;
+    background: rgba(6, 182, 212, 0.05);
+    border-left: 4px solid #06b6d4;
+    border-radius: 0 12px 12px 0;
+    display: none;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+.result-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+}
+
+.result-text {
+    font-size: 16px;
+    font-weight: 600;
+    word-break: break-all;
+    font-family: monospace;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2><i class="fa-solid fa-repeat"></i> Vigenere Cipher</h2>
+</div>
+
+<div class="cipher-card-box">
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchMode('encrypt')">MÃ HÓA (ENCRYPT)</button>
+        <button class="tab-btn" onclick="switchMode('decrypt')">GIẢI MÃ (DECRYPT)</button>
+    </div>
+    
+    <form id="vigenere-form">
+        <input type="hidden" id="mode" name="mode" value="encrypt">
+        
+        <div class="form-group">
+            <label class="form-label" id="text-label">Bản rõ (Plain Text):</label>
+            <textarea class="form-control" id="inputText" name="inputText" rows="3" placeholder="Nhập bản rõ..." required></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Từ khóa (Key - chữ cái):</label>
+            <input type="text" class="form-control" id="inputKey" name="inputKey" placeholder="Ví dụ: KEYWORD" required>
+        </div>
+        
+        <button type="submit" class="btn-custom btn-vigenere">
+            <span id="btn-text"><i class="fa-solid fa-shield-halved"></i> Thực hiện Mã hóa</span>
+        </button>
+    </form>
+
+    <div id="vigenere-result" class="result-box">
+        <div class="result-title" id="result-title-label">Kết quả bản mã (Cipher Text)</div>
+        <div class="result-text" id="vigenere-result-text"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchMode(mode) {
+        document.getElementById('mode').value = mode;
+        const btns = document.querySelectorAll('.tab-btn');
+        btns[0].classList.toggle('active', mode === 'encrypt');
+        btns[1].classList.toggle('active', mode === 'decrypt');
+        
+        const textLabel = document.getElementById('text-label');
+        const inputText = document.getElementById('inputText');
+        const btnText = document.getElementById('btn-text');
+        const resultTitleLabel = document.getElementById('result-title-label');
+        
+        if (mode === 'encrypt') {
+            textLabel.textContent = "Bản rõ (Plain Text):";
+            inputText.placeholder = "Nhập bản rõ...";
+            btnText.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Thực hiện Mã hóa';
+            resultTitleLabel.textContent = "Kết quả bản mã (Cipher Text)";
+        } else {
+            textLabel.textContent = "Bản mã (Cipher Text):";
+            inputText.placeholder = "Nhập bản mã...";
+            btnText.innerHTML = '<i class="fa-solid fa-unlock-keyhole"></i> Thực hiện Giải mã';
+            resultTitleLabel.textContent = "Kết quả bản rõ (Plain Text)";
+        }
+        
+        // Hide result
+        document.getElementById('vigenere-result').style.display = 'none';
+    }
+
+    // Xử lý gửi Form
+    document.getElementById('vigenere-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const mode = document.getElementById('mode').value;
+        const text = document.getElementById('inputText').value;
+        const key = document.getElementById('inputKey').value;
+        
+        const url = mode === 'encrypt' ? '/vigenere/encrypt' : '/vigenere/decrypt';
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text, key: key })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                document.getElementById('vigenere-result-text').textContent = data.result;
+                document.getElementById('vigenere-result').style.display = 'block';
+            } else {
+                alert('Có lỗi xảy ra khi xử lý!');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Không thể kết nối đến server!');
+        }
+    });
+</script>
+{% endblock %}
